@@ -2,6 +2,10 @@
 
 A professional, full-stack, enterprise-grade Timetable Scheduling system. It uses a constraint-satisfaction heuristic algorithm to automatically generate conflict-free schedules for university sections, teachers, and rooms.
 
+### 🚀 Live Demo
+- **Frontend App:** [https://time-table-scheduler-rho.vercel.app/](https://time-table-scheduler-rho.vercel.app/)
+- **Backend API (Swagger):** [https://timetablescheduler-avnd.onrender.com/docs](https://timetablescheduler-avnd.onrender.com/docs)
+
 ![Timetable Scheduler Demo Mode](https://img.shields.io/badge/Status-Production_Ready-success?style=for-the-badge)
 ![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=for-the-badge&logo=fastapi)
 ![React](https://img.shields.io/badge/Frontend-React-61DAFB?style=for-the-badge&logo=react)

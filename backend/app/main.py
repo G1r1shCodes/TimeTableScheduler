@@ -41,7 +41,6 @@ def startup():
 
     # Seed reference data + default admin user
     from app.database import SessionLocal
-    from passlib.context import CryptContext
     db = SessionLocal()
     try:
         _seed(db)
