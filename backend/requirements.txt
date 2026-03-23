@@ -14,7 +14,7 @@ pydantic[email]==2.7.1   # enables EmailStr
 
 # ─── Auth (P12) ───────────────────────────────────────────────────────────────
 python-jose[cryptography]==3.3.0   # JWT encode / decode
-passlib[bcrypt]==1.7.4             # password hashing
+bcrypt>=4.0.0                      # password hashing
 
 # ─── Env / config ─────────────────────────────────────────────────────────────
 python-dotenv==1.0.1

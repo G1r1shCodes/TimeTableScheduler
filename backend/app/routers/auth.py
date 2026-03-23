@@ -22,7 +22,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -36,7 +36,6 @@ SECRET_KEY      = os.getenv("JWT_SECRET_KEY", "CHANGE_ME_IN_PRODUCTION_USE_STRON
 ALGORITHM       = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "480"))  # 8 hours
 
-pwd_context   = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
@@ -68,11 +67,14 @@ class UserOut(BaseModel):
 
 # ── Helpers ───────────────────────────────────────────────────────────────
 def _hash_password(plain: str) -> str:
-    return pwd_context.hash(plain)
+    return bcrypt.hashpw(plain.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
 
 def _verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    try:
+        return bcrypt.checkpw(plain.encode('utf-8'), hashed.encode('utf-8'))
+    except ValueError:
+        return False
 
 
 def _create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:

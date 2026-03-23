@@ -55,9 +55,10 @@ def _seed(db: Session):
         TimeSlot, User, Teacher, Room, Subject,
         SubjectTeacherMapping, Section,
     )
-    from passlib.context import CryptContext
-    pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    import bcrypt
 
+    def _hash_password(plain: str) -> str:
+        return bcrypt.hashpw(plain.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     def upsert(model, pk_field, pk_val, **kwargs):
         obj = db.query(model).filter(getattr(model, pk_field) == pk_val).first()
         if not obj:
@@ -143,7 +144,7 @@ def _seed(db: Session):
     if not db.query(User).filter_by(username='admin').first():
         db.add(User(
             username='admin',
-            hashed_password=pwd.hash('admin123'),
+            hashed_password=_hash_password('admin123'),
             role='admin',
             is_active=True,
         ))
