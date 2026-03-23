@@ -1,0 +1,52 @@
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Node.js / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+.env.local
+.env.*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python / Backend
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+backend/venv/
+backend/.venv/
+backend/env/
+backend/build/
+backend/develop-eggs/
+backend/dist/
+backend/downloads/
+backend/eggs/
+backend/.eggs/
+backend/lib/
+backend/lib64/
+backend/parts/
+backend/sdist/
+backend/var/
+backend/wheels/
+backend/share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Env vars
+.env
+secret.env
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Project specific
+# We will NOT ignore college_timetable.db so that the fallback seed database is pushed to Git for easy demo clones.

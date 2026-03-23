@@ -1,0 +1,22 @@
+# ─── Web framework ────────────────────────────────────────────────────────────
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+
+# ─── Database ─────────────────────────────────────────────────────────────────
+sqlalchemy==2.0.30
+psycopg2-binary==2.9.9
+alembic==1.13.1          # migrations — run: alembic init alembic
+
+# ─── Validation ───────────────────────────────────────────────────────────────
+pydantic==2.7.1
+pydantic[email]==2.7.1   # enables EmailStr
+
+# ─── Auth (P12) ───────────────────────────────────────────────────────────────
+python-jose[cryptography]==3.3.0   # JWT encode / decode
+passlib[bcrypt]==1.7.4             # password hashing
+
+# ─── Env / config ─────────────────────────────────────────────────────────────
+python-dotenv==1.0.1
+
+# ─── Scheduling engine (available, not yet wired to OR-Tools CSP) ─────────────
+ortools==9.10.4067
