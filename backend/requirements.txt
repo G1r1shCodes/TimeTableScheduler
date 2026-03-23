@@ -20,4 +20,4 @@ passlib[bcrypt]==1.7.4             # password hashing
 python-dotenv==1.0.1
 
 # ─── Scheduling engine (available, not yet wired to OR-Tools CSP) ─────────────
-ortools==9.10.4067
+ortools>=9.10.0
