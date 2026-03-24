@@ -11,9 +11,10 @@
   --border-light: rgba(255, 255, 255, 0.08);
   --border-focus: rgba(255, 255, 255, 0.15);
   
-  --accent:       #4f46e5; /* Indigo 600 */
-  --accent-hover: #4338ca; /* Indigo 700 */
+  --accent:       #4f46e5;
+  --accent-hover: #4338ca;
   --accent-faint: rgba(79, 70, 229, 0.1);
+  --accent-light: #818cf8;
   
   --success:      #10b981;
   --warning:      #f59e0b;
@@ -316,8 +317,12 @@ select option { background: var(--bg-surface); }
 .tt-cell.lab {
   border-left: 3px solid var(--success);
 }
-.tt-cell .subj { font-weight: 600; color: var(--text-main); margin-bottom: 0.25rem; }
-.tt-cell .meta { color: var(--text-dim); font-size: 0.7rem; }
+.tt-cell .subj { font-weight: 600; color: var(--text-main); margin-bottom: 0.25rem; font-size: 0.8rem; }
+.tt-cell .meta { color: var(--text-dim); font-size: 0.68rem; }
+
+/* ── Day Column Highlighting ─────────────────────────────────────────────── */
+.tt-grid th:first-child { text-align: center; }
+.tt-grid td:first-child { color: var(--text-dim); text-align: center; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
 
 /* ── Badge / Tag ──────────────────────────────────────────────────────────── */
 .badge {
@@ -341,15 +346,24 @@ select option { background: var(--bg-surface); }
   border-radius: 6px;
   font-size: 0.85rem; font-weight: 500;
   box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  animation: fadeInUp 0.25s ease;
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 .toast-success { background: var(--bg-surface); border-left: 4px solid var(--success); color: var(--text-main); }
 .toast-error   { background: var(--bg-surface); border-left: 4px solid var(--danger);  color: var(--text-main); }
+.toast-warning { background: var(--bg-surface); border-left: 4px solid var(--warning); color: var(--text-main); }
 
 /* ── Helpers ──────────────────────────────────────────────────────────────── */
 .flex-col { display: flex; flex-direction: column; gap: 1rem; }
 .flex-row { display: flex; align-items: center; gap: 1rem; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
 .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; }
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
 .mt-1 { margin-top: 0.5rem; }
 .mt-2 { margin-top: 1rem; }
 .mt-3 { margin-top: 1.5rem; }

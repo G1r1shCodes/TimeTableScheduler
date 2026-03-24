@@ -70,7 +70,7 @@ def _seed(db: Session):
         upsert(Building, 'building_id', bid, building_name=bname)
 
     # Departments
-    for did, dname in [('CSE','Computer Science'),('BT','Biotechnology')]:
+    for did, dname in [('CSE','Computer Science'),('BT','Biotechnology'),('ECE','Electronics')]:
         upsert(Department, 'dept_id', did, dept_name=dname)
 
     # Semester
@@ -93,24 +93,37 @@ def _seed(db: Session):
                 db.add(TimeSlot(day=day, start_time=start, end_time=end, is_break=is_break))
 
     # Rooms
-    for rid, bld, rtype, cap in [
-        ('CSE-LAB-1','EB','LAB',60), ('CSE-LAB-2','EB','LAB',60),
+    db_rooms = [
+        # CSE Labs & Classrooms (EB)
+        ('CSE-LAB-1','EB','LAB',60), ('CSE-LAB-2','EB','LAB',60), ('CSE-LAB-3','EB','LAB',60),
         ('CR-101','EB','CLASS',60),  ('CR-102','EB','CLASS',60),
         ('CR-103','EB','CLASS',60),  ('CR-104','EB','CLASS',60),
-    ]:
+        ('CR-105','EB','CLASS',60),  ('CR-106','EB','CLASS',60),
+        # BT Classrooms & Labs (GH)
+        ('BT-LAB-1','GH','LAB',40),  ('BT-LAB-2','GH','LAB',40),
+        ('CR-201','GH','CLASS',60),  ('CR-202','GH','CLASS',60),
+        # ECE & Generic (SVH)
+        ('ECE-LAB-1','SVH','LAB',50),
+        ('CR-301','SVH','CLASS',60), ('CR-302','SVH','CLASS',60), ('CR-303','SVH','CLASS',120)
+    ]
+    for rid, bld, rtype, cap in db_rooms:
         upsert(Room, 'room_id', rid, building_id=bld, room_type=rtype, capacity=cap, floor=1)
 
     # Teachers
-    for tid, tname in [
-        ('T001','Dr. Sharma'), ('T002','Dr. Gupta'), ('T003','Dr. Patel'),
-        ('T004','Dr. Singh'),  ('T005','Dr. Verma'), ('T006','Dr. Mehta'),
-        ('T007','Dr. Kumar'),  ('T008','Dr. Joshi'), ('T009','Dr. Nair'),
-    ]:
-        upsert(Teacher, 'teacher_id', tid, teacher_name=tname, dept_id='CSE',
-               preferred_building='EB', max_hours_per_day=6)
+    db_teachers = [
+        ('T001','Dr. Sharma','CSE','EB'), ('T002','Dr. Gupta','CSE','EB'), ('T003','Dr. Patel','CSE','EB'),
+        ('T004','Dr. Singh','CSE','EB'),  ('T005','Dr. Verma','CSE','EB'), ('T006','Dr. Mehta','CSE','EB'),
+        ('T007','Dr. Kumar','CSE','EB'),  ('T008','Dr. Joshi','CSE','EB'), ('T009','Dr. Nair','CSE','EB'),
+        ('T010','Prof. Reddy','BT','GH'), ('T011','Dr. Das','BT','GH'),    ('T012','Prof. Sen','BT','GH'),
+        ('T013','Dr. Roy','BT','GH'),     ('T014','Prof. Bose','ECE','SVH'),('T015','Dr. Rao','ECE','SVH'),
+        ('T016','Prof. Ali','ECE','SVH')
+    ]
+    for tid, tname, dept, bld in db_teachers:
+        upsert(Teacher, 'teacher_id', tid, teacher_name=tname, dept_id=dept,
+               preferred_building=bld, max_hours_per_day=6)
 
     # Subjects
-    subjects_data = [
+    db_subjects = [
         ('CSE501','Data Structures','CSE',4,False,1),
         ('CSE502','Operating Systems','CSE',4,False,1),
         ('CSE503','DBMS','CSE',3,False,1),
@@ -118,26 +131,47 @@ def _seed(db: Session):
         ('CSE505','Computer Networks','CSE',3,False,1),
         ('CSE506L','OS Lab','CSE',2,True,2),
         ('CSE507L','DBMS Lab','CSE',2,True,2),
+        
+        ('CSE101','Programming in C','CSE',4,False,1),
+        ('CSE102L','C Programming Lab','CSE',2,True,2),
+        
+        ('BT301','Genetics','BT',4,False,1),
+        ('BT302','Microbiology','BT',3,False,1),
+        ('BT303L','Microbiology Lab','BT',2,True,2),
+
+        ('ECE401','Digital Electronics','ECE',4,False,1),
+        ('ECE402','Signals & Systems','ECE',3,False,1),
+        ('ECE403L','Digital Lab','ECE',2,True,2),
     ]
-    for sid, sname, did, wh, islab, sc in subjects_data:
+    for sid, sname, did, wh, islab, sc in db_subjects:
         upsert(Subject, 'subject_id', sid, subject_name=sname, dept_id=did,
                weekly_hours=wh, is_lab=islab, slot_count=sc)
 
     # Subject-Teacher mappings
     mappings = [
-        ('CSE501','T001'),('CSE501','T002'),
-        ('CSE502','T003'),('CSE502','T004'),
+        ('CSE501','T001'),('CSE501','T002'),('CSE101','T001'),
+        ('CSE502','T003'),('CSE502','T004'),('CSE102L','T003'),
         ('CSE503','T005'),('CSE503','T006'),
         ('CSE504','T007'),('CSE505','T008'),
         ('CSE506L','T003'),('CSE507L','T005'),
+        ('BT301','T010'),('BT302','T011'),('BT303L','T012'),
+        ('ECE401','T014'),('ECE402','T015'),('ECE403L','T016')
     ]
     for subj_id, t_id in mappings:
         if not db.query(SubjectTeacherMapping).filter_by(subject_id=subj_id, teacher_id=t_id).first():
             db.add(SubjectTeacherMapping(subject_id=subj_id, teacher_id=t_id))
 
-    # Sections (2 CSE sections for a quick demo)
-    for sec_id in ['3CSE1','3CSE2']:
-        upsert(Section, 'section_id', sec_id, year=3, dept_id='CSE', total_students=60)
+    # Sections (Expanded for full DB experience)
+    sections_data = [
+        ('1CSE1',1,'CSE',60), ('1CSE2',1,'CSE',60), ('1CSE3',1,'CSE',60),
+        ('2CSE1',2,'CSE',60), ('2CSE2',2,'CSE',60),
+        ('3CSE1',3,'CSE',60), ('3CSE2',3,'CSE',60),
+        ('4CSE1',4,'CSE',60),
+        ('2BT1',2,'BT',40),   ('3BT1',3,'BT',40),
+        ('2ECE1',2,'ECE',50), ('3ECE1',3,'ECE',50)
+    ]
+    for sec_id, yr, dept, std in sections_data:
+        upsert(Section, 'section_id', sec_id, year=yr, dept_id=dept, total_students=std)
 
     # Default admin user
     if not db.query(User).filter_by(username='admin').first():
