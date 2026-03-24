@@ -21,7 +21,7 @@ from app.database import get_db
 from app.models import (
     Teacher, Room, Subject, Section,
     SubjectTeacherMapping, TeacherAvailability, Timetable,
-    Building, Department,
+    Building, Department, Semester, TimeSlot, SchedulerConfig
 )
 from app.routers.auth import require_admin
 from app.models import User
@@ -115,6 +115,59 @@ class TimetableOverride(BaseModel):
     teacher_id:  str
     room_id:     str
     slot_id:     int
+
+
+class BuildingCreate(BaseModel):
+    building_id:   str
+    building_name: str
+
+
+class BuildingOut(BuildingCreate):
+    class Config: from_attributes = True
+
+
+class DepartmentCreate(BaseModel):
+    dept_id:   str
+    dept_name: str
+
+
+class DepartmentOut(DepartmentCreate):
+    class Config: from_attributes = True
+
+
+class SemesterCreate(BaseModel):
+    academic_year: str
+    semester:      int
+    is_active:     bool = False
+
+
+class SemesterOut(SemesterCreate):
+    semester_id: int
+    class Config: from_attributes = True
+
+
+class TimeSlotCreate(BaseModel):
+    day:        str
+    start_time: str
+    end_time:   str
+    is_break:   bool = False
+
+
+class TimeSlotOut(TimeSlotCreate):
+    slot_id: int
+    class Config: from_attributes = True
+
+
+class ConfigUpdate(BaseModel):
+    max_continuous_classes: int
+    mandatory_break:        bool
+    max_hours_per_day:      int
+    same_building_pref:     bool
+
+
+class ConfigOut(ConfigUpdate):
+    config_id: int
+    class Config: from_attributes = True
 
 
 # ═════════════════════════════════════════════════════════════════════════
@@ -472,3 +525,192 @@ def timetable_override(
     db.commit()
     db.refresh(entry)
     return {"message": "Slot assigned", "timetable_id": entry.timetable_id}
+
+
+# ═════════════════════════════════════════════════════════════════════════
+# Buildings
+# ═════════════════════════════════════════════════════════════════════════
+
+@router.get("/buildings", response_model=List[BuildingOut], summary="List all buildings")
+def list_buildings(
+    db:      Session = Depends(get_db),
+    _admin:  User    = Depends(require_admin),
+):
+    return db.query(Building).order_by(Building.building_id).all()
+
+
+@router.post("/buildings", response_model=BuildingOut, status_code=201, summary="Add a new building")
+def create_building(
+    body:   BuildingCreate,
+    db:     Session = Depends(get_db),
+    _admin: User    = Depends(require_admin),
+):
+    if db.query(Building).filter_by(building_id=body.building_id).first():
+        raise HTTPException(409, f"Building {body.building_id} already exists")
+    b = Building(**body.model_dump())
+    db.add(b)
+    db.commit()
+    db.refresh(b)
+    return b
+
+
+@router.delete("/buildings/{building_id}", summary="Delete a building")
+def delete_building(
+    building_id: str,
+    db:          Session = Depends(get_db),
+    _admin:      User    = Depends(require_admin),
+):
+    b = db.query(Building).filter_by(building_id=building_id).first()
+    if not b:
+        raise HTTPException(404, "Building not found")
+    db.delete(b)
+    db.commit()
+    return {"message": f"Building {building_id} deleted"}
+
+
+# ═════════════════════════════════════════════════════════════════════════
+# Departments
+# ═════════════════════════════════════════════════════════════════════════
+
+@router.get("/departments", response_model=List[DepartmentOut], summary="List all departments")
+def list_departments(
+    db:      Session = Depends(get_db),
+    _admin:  User    = Depends(require_admin),
+):
+    return db.query(Department).order_by(Department.dept_id).all()
+
+
+@router.post("/departments", response_model=DepartmentOut, status_code=201, summary="Add a new department")
+def create_department(
+    body:   DepartmentCreate,
+    db:     Session = Depends(get_db),
+    _admin: User    = Depends(require_admin),
+):
+    if db.query(Department).filter_by(dept_id=body.dept_id).first():
+        raise HTTPException(409, f"Department {body.dept_id} already exists")
+    d = Department(**body.model_dump())
+    db.add(d)
+    db.commit()
+    db.refresh(d)
+    return d
+
+
+@router.delete("/departments/{dept_id}", summary="Delete a department")
+def delete_department(
+    dept_id: str,
+    db:      Session = Depends(get_db),
+    _admin:  User    = Depends(require_admin),
+):
+    d = db.query(Department).filter_by(dept_id=dept_id).first()
+    if not d:
+        raise HTTPException(404, "Department not found")
+    db.delete(d)
+    db.commit()
+    return {"message": f"Department {dept_id} deleted"}
+
+
+# ═════════════════════════════════════════════════════════════════════════
+# Semesters
+# ═════════════════════════════════════════════════════════════════════════
+
+@router.get("/semesters", response_model=List[SemesterOut], summary="List all semesters")
+def list_semesters(
+    db:      Session = Depends(get_db),
+    _admin:  User    = Depends(require_admin),
+):
+    return db.query(Semester).order_by(Semester.semester_id).all()
+
+
+@router.post("/semesters", response_model=SemesterOut, status_code=201, summary="Add a new semester")
+def create_semester(
+    body:   SemesterCreate,
+    db:     Session = Depends(get_db),
+    _admin: User    = Depends(require_admin),
+):
+    s = Semester(**body.model_dump())
+    db.add(s)
+    db.commit()
+    db.refresh(s)
+    return s
+
+
+@router.delete("/semesters/{semester_id}", summary="Delete a semester")
+def delete_semester(
+    semester_id: int,
+    db:          Session = Depends(get_db),
+    _admin:      User    = Depends(require_admin),
+):
+    s = db.query(Semester).filter_by(semester_id=semester_id).first()
+    if not s:
+        raise HTTPException(404, "Semester not found")
+    db.delete(s)
+    db.commit()
+    return {"message": f"Semester {semester_id} deleted"}
+
+
+# ═════════════════════════════════════════════════════════════════════════
+# Time Slots
+# ═════════════════════════════════════════════════════════════════════════
+
+@router.get("/timeslots", response_model=List[TimeSlotOut], summary="List all time slots")
+def list_timeslots(
+    db:      Session = Depends(get_db),
+    _admin:  User    = Depends(require_admin),
+):
+    return db.query(TimeSlot).order_by(TimeSlot.slot_id).all()
+
+
+@router.post("/timeslots", response_model=TimeSlotOut, status_code=201, summary="Add a new time slot")
+def create_timeslot(
+    body:   TimeSlotCreate,
+    db:     Session = Depends(get_db),
+    _admin: User    = Depends(require_admin),
+):
+    t = TimeSlot(**body.model_dump())
+    db.add(t)
+    db.commit()
+    db.refresh(t)
+    return t
+
+
+@router.delete("/timeslots/{slot_id}", summary="Delete a time slot")
+def delete_timeslot(
+    slot_id: int,
+    db:      Session = Depends(get_db),
+    _admin:  User    = Depends(require_admin),
+):
+    t = db.query(TimeSlot).filter_by(slot_id=slot_id).first()
+    if not t:
+        raise HTTPException(404, "Time slot not found")
+    db.delete(t)
+    db.commit()
+    return {"message": f"Time slot {slot_id} deleted"}
+
+
+# ═════════════════════════════════════════════════════════════════════════
+# Configuration
+# ═════════════════════════════════════════════════════════════════════════
+
+@router.get("/config", response_model=List[ConfigOut], summary="Get scheduler configurations")
+def get_config(
+    db:      Session = Depends(get_db),
+    _admin:  User    = Depends(require_admin),
+):
+    return db.query(SchedulerConfig).all()
+
+
+@router.put("/config/{config_id}", response_model=ConfigOut, summary="Update scheduler configuration")
+def update_config(
+    config_id: int,
+    body:      ConfigUpdate,
+    db:        Session = Depends(get_db),
+    _admin:    User    = Depends(require_admin),
+):
+    c = db.query(SchedulerConfig).filter_by(config_id=config_id).first()
+    if not c:
+        raise HTTPException(404, "Config not found")
+    for k, v in body.model_dump().items():
+        setattr(c, k, v)
+    db.commit()
+    db.refresh(c)
+    return c
